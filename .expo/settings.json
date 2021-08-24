@@ -5,6 +5,6 @@
   "minify": true,
   "urlRandomness": "tm-hvr",
   "https": false,
-  "scheme": null,
-  "devClient": false
+  "scheme": "com.hzuccon.hashpass",
+  "devClient": true
 }

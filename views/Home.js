@@ -30,7 +30,7 @@ export const HomeScreen = ({ navigation }) => {
   const serviceInputRef = React.useRef(null)
 
   const hashService = async input => {
-    generate.HEX('test', 'test')
+    generate.BASE58('test', 'test')
   }
 
   React.useEffect(() => {
@@ -48,7 +48,7 @@ export const HomeScreen = ({ navigation }) => {
       userInfo = JSON.parse(userInfo)
 
       // No point continuing if the user wont be able to log in
-      if (userInfo == null || userInfo.refreshToken == null) {
+      if (!userInfo || !userInfo.refreshToken) {
         return
       }
 
