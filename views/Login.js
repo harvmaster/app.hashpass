@@ -14,6 +14,7 @@ import {
   useToast
 } from 'native-base'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import * as EncryptedStorage from 'expo-secure-store'
 import axios from 'axios';
 
 export const LoginScreen = ({ navigation }) => {
@@ -23,10 +24,11 @@ export const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = React.useState('')
   const [password, setPassword] = React.useState('')
 
-  const saveUserData = async data => {
+  const saveData = async (key, data, encrypt = false) => {
     try {
       const jsonValue = JSON.stringify(data)
-      await AsyncStorage.setItem('@hashpass', jsonValue)
+      if (encrypt) await EncryptedStorage.setItemAsync(key, jsonValue)
+      if (!encrypt) await AsyncStorage.setItem(key, jsonValue)
     } catch (error) {
       console.log(error)
       toast.show({
@@ -62,15 +64,17 @@ export const LoginScreen = ({ navigation }) => {
       })
       
       // Save user data to the device and axios headers
-      const dataToSave = {
+      const userData = {
         accessToken: res.data.accessToken,
-        services: res.data.services,
         refreshToken: res.data.refreshToken || '',
         username: res.data.username
       }
 
-      axios.defaults.headers.authorization = res.data.accessToken
-      saveUserData(dataToSave).then(() => navigation.navigate('Home'))
+      axios.defaults.headers.authorization = res.data.accessToken.token
+      saveData('user', userData, true)
+        .then(() => saveData('services', res.data.services)
+        .then(() => navigation.navigate('Home')))
+        .catch(err => console.log(err))
 
       // Let the user know they logged in
       toast.show({
@@ -163,12 +167,3 @@ export const LoginScreen = ({ navigation }) => {
     </KeyboardAvoidingView>
   );
 }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: '#fff',
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//   },
-// });

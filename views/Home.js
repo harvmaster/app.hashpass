@@ -4,20 +4,20 @@ import {
   Box,
   KeyboardAvoidingView,
   ScrollView,
-  VStack,
-  FormControl,
   Input,
   Icon,
   Text,
-  Fab,
-  // Modal
+  Button,
+  Fab
 } from 'native-base'
 import { Modal } from 'react-native'
+
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import EncryptedStorage from 'react-native-encrypted-storage'
+import * as EncryptedStorage from 'expo-secure-store'
 import axios from 'axios'
 
-import DefaultServices from '../resources/DefaultServices'
+import { DefaultServices } from '../resources/DefaultServices'
+import { generate } from '../resources/Generators'
 
 export const HomeScreen = ({ navigation }) => {
 
@@ -30,7 +30,7 @@ export const HomeScreen = ({ navigation }) => {
   const serviceInputRef = React.useRef(null)
 
   const hashService = async input => {
-    // const pwd = runHash(input)
+    generate.HEX('test', 'test')
   }
 
   React.useEffect(() => {
@@ -38,30 +38,32 @@ export const HomeScreen = ({ navigation }) => {
       let servicesFromStorage = await AsyncStorage.getItem('services')
       servicesFromStorage = JSON.parse(servicesFromStorage)
 
-      setServices(servicesFromStorage)
-      if (!servicesFromStorage) {
+      if (!servicesFromStorage.length) {
         setServices(DefaultServices)
+      } else {
+        setServices(servicesFromStorage)
       }
 
-      const userInfo = await EncryptedStorage.getItem('user')
+      let userInfo = await EncryptedStorage.getItemAsync('user')
+      userInfo = JSON.parse(userInfo)
 
       // No point continuing if the user wont be able to log in
-      if (!userInfo || !userInfo.refreshToken) {
+      if (userInfo == null || userInfo.refreshToken == null) {
         return
       }
 
       // Make sure their access token is up to date, if not, get a new one
-      if (userInfo.accessToken.expires > Date.now().getTime()) {
+      if (userInfo.accessToken.expires < Date.now()) {
         try {
           const tokenRes = await axios.post('/users/refreshtoken', { refreshToken: userInfo.refreshToken })
           userInfo.accessToken = tokenRes.data.accessToken
 
-          axios.defaults.headers.authorization = tokenRes.data.accessToken
-          await EncryptedStorage.setItem('user', {
+          axios.defaults.headers.authorization = tokenRes.data.accessToken.token
+          await EncryptedStorage.setItemAsync('user', JSON.stringify({
             username: tokenRes.username,
             refreshToken: userInfo.refreshToken,
             accessToken: tokenRes.accessToken
-          })
+          }))
         } catch (error) {
           console.log(error)
         }
@@ -69,7 +71,8 @@ export const HomeScreen = ({ navigation }) => {
 
       try {
         const res = await axios.get('/services')
-        setServices(res.data)
+        if (res.data.length > 0) setServices(res.data)
+        await AsyncStorage.setItem('services', JSON.stringify(res.data))
        } catch (err) {
          console.log(err.response.status, err.response.data)
        }
@@ -125,11 +128,15 @@ export const HomeScreen = ({ navigation }) => {
           justifyContent="center"
         >
           {services.length == 0 && (<Text>No Services Found</Text>)}
-          {services.length > 0 && services.forEach(service => (
+          {services.length > 0 && services.map(service => (
             <Box>
               {service.name}
             </Box>
           ))}
+
+          <Button onPress={() => hashService()}>
+            hash
+          </Button>
 
 
         </Box>

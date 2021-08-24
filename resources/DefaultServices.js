@@ -1,4 +1,4 @@
-export const services = [
+export const DefaultServices = [
   {
     name: 'facebook',
     logo: 'https://e7.pngegg.com/pngimages/876/866/png-clipart-ios-facebook-iphone-7-computer-icons-iphone-facebook-icon-blue-rectangle.png',
@@ -49,4 +49,4 @@ export const services = [
   }
 ]
 
-export default services
+export default DefaultServices
