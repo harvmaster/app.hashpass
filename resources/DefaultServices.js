@@ -1,7 +1,7 @@
 export const DefaultServices = [
   {
     name: 'facebook',
-    logo: 'https://e7.pngegg.com/pngimages/876/866/png-clipart-ios-facebook-iphone-7-computer-icons-iphone-facebook-icon-blue-rectangle.png',
+    logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEbgT92ySDC019VOgaVeByVpun9sjYzXxIOwXvDDa3KfhmoQaX-X5CTiyRj8XCuddfaLc&usqp=CAU',
     legacy: true,
     encoding: 'hex'
   },

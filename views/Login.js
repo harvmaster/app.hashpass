@@ -140,7 +140,11 @@ export const LoginScreen = ({ navigation }) => {
               <FormControl.Label  _text={{color: 'muted.700', fontSize: 'sm', fontWeight: 600}}>
                   Password
               </FormControl.Label>
-              <Input type="password" onChangeText={text => setPassword(text)} />
+              <Input 
+                type="password"
+                onChangeText={text => setPassword(text)}
+                onSubmitEditing={() => attemptLogin()}  
+              />
               <Link
                 _text={{ fontSize: 'xs', fontWeight: '700', color:'cyan.500' }}
                 alignSelf="flex-end"

@@ -8,13 +8,20 @@ import {
   Icon,
   Text,
   Button,
-  Fab
+  Fab,
+  Image,
+  Heading,
+  Center,
+  Flex,
+  Pressable
 } from 'native-base'
 import { Modal } from 'react-native'
 
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as EncryptedStorage from 'expo-secure-store'
 import axios from 'axios'
+
+import { TextModal } from '../components/TextModal'
 
 import { DefaultServices } from '../resources/DefaultServices'
 import { generate } from '../resources/Generators'
@@ -26,11 +33,45 @@ export const HomeScreen = ({ navigation }) => {
   
   const [serviceModal, setServiceModal] = React.useState(false)
   const [serviceInput, setServiceInput] = React.useState('')
+  const [secretModal, setSecretModal] = React.useState(false)
+  const [secretInput, setSecretInput] = React.useState('')
+  const [secretInputCallback, setSecretInputCallback] = React.useState(function () {})
 
   const serviceInputRef = React.useRef(null)
+  const secretInputRef = React.useRef(null)
 
-  const hashService = async input => {
-    generate.BASE58('test', 'test')
+  const hashService = async (input, sct) => {
+    console.log('input', input)
+    console.log('secret', secret)
+    console.log(hashService)
+
+    // If secret is not set, we bring up the modal to enter the secret and use a callback to pass the secret to the function that
+    /*
+      we dont just read the secret variable because it was not being set prior to the function call so I instead just pass it as an optional parameter. Yes, this is a hack
+    */
+    if (!secret && !sct) {
+      console.log('No Secret')
+      setSecretInputCallback(() => s => {
+        hashService(input, s)
+      })
+      setSecretModal(true)
+      return
+    }
+    // 
+    if (!sct) sct = secret
+    console.log('has secret')
+
+    const encoding = findEncoder(input) || 'HEX'
+    const pwd = generate[encoding](serviceInput, secretInput)
+    console.log(pwd)
+
+    setServiceInput('')
+  }
+
+  // Returning the method of encoding the final password
+  const findEncoder = (name) => {
+    const serviceIndex = services.findIndex(service => service.name === name)
+    return services[serviceIndex]?.encoding?.toUpperCase() || null
   }
 
   React.useEffect(() => {
@@ -54,6 +95,7 @@ export const HomeScreen = ({ navigation }) => {
 
       // Make sure their access token is up to date, if not, get a new one
       if (userInfo.accessToken.expires < Date.now()) {
+        console.log('bad token')
         try {
           const tokenRes = await axios.post('/users/refreshtoken', { refreshToken: userInfo.refreshToken })
           userInfo.accessToken = tokenRes.data.accessToken
@@ -82,10 +124,10 @@ export const HomeScreen = ({ navigation }) => {
 
   return (
     <KeyboardAvoidingView behavior="padding" flex={1}>
-      <ScrollView keyboardShouldPersistTaps="handled" flex={1} centerContent>
+      <ScrollView keyboardShouldPersistTaps="handled" flex={1}>
 
         {/* Handle service input */}
-        <Modal
+        {/* <Modal
           visible={serviceModal}
           onShow={() => serviceInputRef.current.focus()}
           onDismiss={()  => setServiceModal(false)}
@@ -101,8 +143,12 @@ export const HomeScreen = ({ navigation }) => {
           >
             <ScrollView _contentContainerStyle={{ height: '100%', width: '100%', justifyContent: 'flex-end' }}>
                 <Box style={{ backgroundColor: 'white' }} p={2}>
+                  <Text pb={2}>
+                    Enter the service you want to create a password for
+                  </Text>
                   <Input
                     ref={serviceInputRef}
+                    placeholder='Service'
                     onBlur={() => setServiceModal(false)}
                     onChangeText={text => setServiceInput(text)}
                     onSubmitEditing={() => hashService(serviceInput)}
@@ -110,7 +156,65 @@ export const HomeScreen = ({ navigation }) => {
                 </Box>
             </ScrollView>
           </KeyboardAvoidingView>
-        </Modal>
+        </Modal> */}
+        <TextModal 
+          visible={serviceModal}
+          transparent={true}
+          onSubmitEditing={service => hashService(service)}
+          onDismiss={() => setServiceModal(false)}
+          placeholder='Service'
+          text='Enter the service you want to create a password for'
+        />
+
+        <TextModal
+          visible={secretModal}
+          transparent={true}
+          onSubmitEditing={scrt => secretInputCallback(scrt)}
+          onDismiss={() => setSecretModal(false)}
+          placeholder='Secret'
+          text='This is your master password. Keep this secret'
+          type='password'
+        />
+
+        {/* Handle secret input */}
+        {/* <Modal
+          visible={secretModal}
+          onShow={() => secretInputRef.current.focus()}
+          onDismiss={()  => setSecretModal(false)}
+          onRequestClose={() => setSecretModal(false)}
+          transparent={true}
+        >
+          <KeyboardAvoidingView 
+            behavior="padding"
+            style={{
+              height: '100%',
+              width: '100%'
+            }}
+          >
+            <ScrollView _contentContainerStyle={{ height: '100%', width: '100%', justifyContent: 'flex-end' }}>
+                <Box style={{ backgroundColor: 'white' }} p={2}>
+                  <Text pb={2}>
+                    This is your master password. Keep this secret
+                  </Text>
+                  <Input
+                    ref={secretInputRef}
+                    type='password'
+                    placeholder='secret'
+                    onBlur={() => setSecretModal(false)}
+                    onChangeText={text => {
+                      setSecretInput(text)
+                      setSecret(text)
+                    }}
+                    onSubmitEditing={() => {
+                      console.log(secret)
+                      setSecretModal(false)
+                      secretInputCallback(secret)
+                    }}
+                  />
+                </Box>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </Modal> */}
 
         <Fab
           placement="bottom-right"
@@ -125,19 +229,29 @@ export const HomeScreen = ({ navigation }) => {
           p={2}
           w="90%"
           mx='auto'
-          justifyContent="center"
+          justifyContent="flex-start"
         >
-          {services.length == 0 && (<Text>No Services Found</Text>)}
-          {services.length > 0 && services.map(service => (
-            <Box>
-              {service.name}
-            </Box>
-          ))}
-
-          <Button onPress={() => hashService()}>
-            hash
-          </Button>
-
+          <Center>
+            <Heading size="lg" color='primary.500' pb={5} pt={0}>
+              Hashpass
+            </Heading>
+          </Center>
+          <Flex direction='row' wrap='wrap' w='100%'>
+            {services.length == 0 && (<Text>No Services Found</Text>)}
+            {services.length > 0 && services.map((service, index, arr) => (
+              <Pressable w='20%' onPress={() => hashService(service.name)} key={service.name}>
+                <Box style={{ padding: 5 }}>
+                  <Image
+                    source={{ uri: service.logo }}
+                    w='100%'
+                    aspectRatio={1}
+                    borderRadius={10}
+                    alt='https://learnhrm.shrm.org/wp-content/uploads/2020/04/logo-placeholder-generic.200x200.png'
+                  />
+                </Box>
+              </Pressable>
+            ))}
+          </Flex>
 
         </Box>
       </ScrollView>
