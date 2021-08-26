@@ -127,36 +127,6 @@ export const HomeScreen = ({ navigation }) => {
       <ScrollView keyboardShouldPersistTaps="handled" flex={1}>
 
         {/* Handle service input */}
-        {/* <Modal
-          visible={serviceModal}
-          onShow={() => serviceInputRef.current.focus()}
-          onDismiss={()  => setServiceModal(false)}
-          onRequestClose={() => setServiceModal(false)}
-          transparent={true}
-        >
-          <KeyboardAvoidingView 
-            behavior="padding"
-            style={{
-              height: '100%',
-              width: '100%'
-            }}
-          >
-            <ScrollView _contentContainerStyle={{ height: '100%', width: '100%', justifyContent: 'flex-end' }}>
-                <Box style={{ backgroundColor: 'white' }} p={2}>
-                  <Text pb={2}>
-                    Enter the service you want to create a password for
-                  </Text>
-                  <Input
-                    ref={serviceInputRef}
-                    placeholder='Service'
-                    onBlur={() => setServiceModal(false)}
-                    onChangeText={text => setServiceInput(text)}
-                    onSubmitEditing={() => hashService(serviceInput)}
-                  />
-                </Box>
-            </ScrollView>
-          </KeyboardAvoidingView>
-        </Modal> */}
         <TextModal 
           visible={serviceModal}
           transparent={true}
@@ -166,6 +136,7 @@ export const HomeScreen = ({ navigation }) => {
           text='Enter the service you want to create a password for'
         />
 
+        {/* Handle secret input */}
         <TextModal
           visible={secretModal}
           transparent={true}
@@ -176,45 +147,7 @@ export const HomeScreen = ({ navigation }) => {
           type='password'
         />
 
-        {/* Handle secret input */}
-        {/* <Modal
-          visible={secretModal}
-          onShow={() => secretInputRef.current.focus()}
-          onDismiss={()  => setSecretModal(false)}
-          onRequestClose={() => setSecretModal(false)}
-          transparent={true}
-        >
-          <KeyboardAvoidingView 
-            behavior="padding"
-            style={{
-              height: '100%',
-              width: '100%'
-            }}
-          >
-            <ScrollView _contentContainerStyle={{ height: '100%', width: '100%', justifyContent: 'flex-end' }}>
-                <Box style={{ backgroundColor: 'white' }} p={2}>
-                  <Text pb={2}>
-                    This is your master password. Keep this secret
-                  </Text>
-                  <Input
-                    ref={secretInputRef}
-                    type='password'
-                    placeholder='secret'
-                    onBlur={() => setSecretModal(false)}
-                    onChangeText={text => {
-                      setSecretInput(text)
-                      setSecret(text)
-                    }}
-                    onSubmitEditing={() => {
-                      console.log(secret)
-                      setSecretModal(false)
-                      secretInputCallback(secret)
-                    }}
-                  />
-                </Box>
-            </ScrollView>
-          </KeyboardAvoidingView>
-        </Modal> */}
+        
 
         <Fab
           placement="bottom-right"
