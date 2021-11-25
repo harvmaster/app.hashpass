@@ -10,32 +10,25 @@ import { Modal } from 'react-native'
 
 export const TextModal = ({ visible, onShow, onDismiss, onRequestClose, transparent, onBlur, onChangeText, onSubmitEditing, placeholder, text, type = 'text' }) => {
   
-  const [isVisible, setIsVisible] = React.useState(visible)
   const [input, setInput] = React.useState('')
-
   const inputRef = React.useRef(null)
 
-  React.useEffect(() => {
-    setIsVisible(visible)
-  }, [visible])
-
-  React.useEffect(() => {
-    visible = isVisible
-  }, [isVisible])
-
-  React.useEffect(() => {
-    if (onChangeText) onChangeText(input)
-  }, [input])
-
   const handleOnShow = () => {
-    setIsVisible(true)
     inputRef.current.focus()
     if (onShow) onShow()
   }
 
-  const handleOnDismiss = () => {
-    setIsVisible(false)
-    if (onDismiss)onDismiss()
+  const handleOnDismiss = (newState) => {
+    console.log(!!onDismiss)
+    if (onDismiss)onDismiss(newState)
+  }
+
+  const handleOnSubmitEditing = () => {
+    const txt = input
+    setInput('')
+    inputRef.current.clear()
+    inputRef.current.focus()
+    onSubmitEditing(txt)
   }
 
   
@@ -44,8 +37,8 @@ export const TextModal = ({ visible, onShow, onDismiss, onRequestClose, transpar
     <Modal
       visible={visible}
       onShow={() => handleOnShow()}
-      onDismiss={()  => handleOnDismiss()}
-      onRequestClose={() => handleOnDismiss()}
+      // onDismiss={()  => handleOnDismiss('')}
+      // onRequestClose={() => handleOnDismiss('')}
       transparent={transparent}
     >
       <KeyboardAvoidingView 
@@ -64,9 +57,10 @@ export const TextModal = ({ visible, onShow, onDismiss, onRequestClose, transpar
                 ref={inputRef}
                 placeholder={placeholder}
                 type={type}
-                onBlur={() => handleOnDismiss()}
+                onBlur={() => handleOnDismiss('')}
                 onChangeText={txt => setInput(txt)}
-                onSubmitEditing={() => onSubmitEditing(input)}
+                onSubmitEditing={() => handleOnSubmitEditing()}
+                blurOnSubmit={false}
               />
             </Box>
         </ScrollView>
